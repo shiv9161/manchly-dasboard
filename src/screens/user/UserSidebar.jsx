@@ -1,43 +1,39 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
-  MonitorPlay,
+  PlayCircle,
   Users,
-  Settings,
-  LogOut,
+  Radio,
   Sparkles,
-  Wallet,
-  ShieldCheck,
   Bell,
   LifeBuoy,
-  Clapperboard,
+  Settings,
+  LogOut,
 } from "lucide-react";
+import colors from "../../utils/colors";
+import { Modal } from "../../components/ui";
+import { useAuth } from "../../context/AuthContext";
 
-import colors from "../utils/colors";
-import { Modal } from "./ui";
-
-const MENU_ITEMS = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { key: "courses", label: "Courses", icon: BookOpen },
-  { key: "studio", label: "Course Studio", icon: Clapperboard },
-  { key: "webinars", label: "Webinars", icon: MonitorPlay },
-  { key: "sessions", label: "1:1 Sessions", icon: Users },
-  { key: "ai", label: "AI Assistant", icon: Sparkles },
-  { key: "wallet", label: "Wallet & Payouts", icon: Wallet },
-  { key: "kyc", label: "KYC", icon: ShieldCheck },
-  { key: "notifications", label: "Notifications", icon: Bell },
-  { key: "help", label: "Help Center", icon: LifeBuoy },
-  { key: "settings", label: "Profile & Settings", icon: Settings },
+const USER_MENU_ITEMS = [
+  { key: "home", label: "Home", icon: LayoutDashboard, path: "/app/home" },
+  { key: "explore", label: "Explore", icon: BookOpen, path: "/app/explore" },
+  { key: "learning", label: "My Learning", icon: PlayCircle, path: "/app/learning" },
+  { key: "sessions", label: "1:1 Experts", icon: Users, path: "/app/sessions" },
+  { key: "notifications", label: "Notifications", icon: Bell, path: "/app/notifications" },
+  { key: "help", label: "Help Center", icon: LifeBuoy, path: "/app/help" },
+  { key: "settings", label: "Settings", icon: Settings, path: "/app/settings" },
 ];
 
-export default function Sidebar({
-  active = "dashboard",
-  onNavigate,
-  onLogout,
-}) {
+export default function UserSidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { logout } = useAuth();
   const [confirmLogout, setConfirmLogout] = useState(false);
+
+  const activePath = location.pathname;
 
   return (
     <>
@@ -45,8 +41,8 @@ export default function Sidebar({
         style={{
           width: 260,
           minHeight: "100vh",
-          background: colors.base.cardBackground,
-          borderRight: `1px solid ${colors.base.border}`,
+          background: colors.user?.nav || "#080C25",
+          borderRight: `1px solid ${colors.user?.border || "rgba(255, 255, 255, 0.08)"}`,
           display: "flex",
           flexDirection: "column",
           justify: "space-between",
@@ -59,35 +55,36 @@ export default function Sidebar({
       >
         {/* Top Section */}
         <div>
-          {/* Logo */}
-          <div style={{ padding: 24 }}>
+          {/* Logo Branding */}
+          <div style={{ padding: "24px 20px 18px" }}>
             <h1
               style={{
                 margin: 0,
-                fontSize: 28,
-                fontWeight: 800,
-                background: colors.gradients.orange,
+                fontSize: 26,
+                fontWeight: 900,
+                background: colors.gradients?.indigo || "linear-gradient(135deg, #5A68F3 0%, #7B88DD 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 fontFamily: "Montserrat, Inter, sans-serif",
+                letterSpacing: -0.5,
               }}
             >
               Manchly
             </h1>
-
             <p
               style={{
-                marginTop: 6,
-                color: colors.typography.secondaryText,
-                fontSize: 14,
+                margin: "4px 0 0",
+                color: colors.user?.subHeading || "#73799B",
+                fontSize: 13,
+                fontWeight: 600,
               }}
             >
-              Creator Suite
+              Learner Portal
             </p>
           </div>
 
-          {/* Navigation */}
-          <div
+          {/* Navigation Links */}
+          <nav
             style={{
               display: "flex",
               flexDirection: "column",
@@ -95,49 +92,55 @@ export default function Sidebar({
               padding: "0 12px 12px",
             }}
           >
-            {MENU_ITEMS.map((item) => {
+            {USER_MENU_ITEMS.map((item) => {
               const Icon = item.icon;
-              const isActive = item.key === active;
+              const isActive =
+                activePath === item.path ||
+                (item.path !== "/app/home" && activePath.startsWith(item.path));
 
               return (
                 <button
                   key={item.key}
-                  onClick={() => onNavigate?.(item.key)}
+                  onClick={() => navigate(item.path)}
                   style={{
                     border: "none",
-                    background: isActive ? colors.gradients.goldSoft : "transparent",
+                    background: isActive
+                      ? colors.user?.cardSoft || "#242843"
+                      : "transparent",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 14,
-                    padding: "12px 16px",
-                    borderRadius: 10,
+                    padding: "11px 16px",
+                    borderRadius: 12,
                     borderLeft: isActive
-                      ? `4px solid ${colors.brand.primaryOrange}`
+                      ? `4px solid ${colors.user?.accent || "#4F60FA"}`
                       : "4px solid transparent",
-                    color: isActive ? "#6B4A0E" : colors.typography.primaryText,
+                    color: isActive
+                      ? colors.user?.text || "#FFFFFF"
+                      : colors.user?.subHeading || "#73799B",
                     fontSize: 14.5,
                     fontWeight: isActive ? 800 : 500,
-                    boxShadow: isActive ? "0 4px 12px rgba(214,156,63,0.28)" : "none",
                     textAlign: "left",
+                    transition: "all 0.2s ease",
                   }}
                 >
                   <Icon
                     size={19}
-                    color={isActive ? "#6B4A0E" : colors.typography.primaryText}
+                    color={isActive ? colors.user?.accentSoft || "#BDC2FF" : "inherit"}
                   />
                   {item.label}
                 </button>
               );
             })}
-          </div>
+          </nav>
         </div>
 
-        {/* Footer */}
+        {/* Footer / Logout */}
         <div
           style={{
-            borderTop: `1px solid ${colors.base.border}`,
-            padding: 20,
+            borderTop: `1px solid ${colors.user?.border || "rgba(255, 255, 255, 0.08)"}`,
+            padding: 16,
           }}
         >
           <button
@@ -147,21 +150,24 @@ export default function Sidebar({
               display: "flex",
               alignItems: "center",
               gap: 12,
+              padding: "10px 14px",
               border: "none",
               background: "transparent",
               cursor: "pointer",
-              fontSize: 15,
+              fontSize: 14.5,
               fontWeight: 600,
-              color: "#D32F2F",
+              color: colors.status?.error || "#EF4444",
+              borderRadius: 10,
+              transition: "background 0.2s ease",
             }}
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
             Log out
           </button>
         </div>
       </aside>
 
-      {/* Render logout modal outside the sidebar stacking context using createPortal */}
+      {/* Logout Confirmation Portal */}
       {confirmLogout &&
         typeof document !== "undefined" &&
         createPortal(
@@ -171,17 +177,24 @@ export default function Sidebar({
             title="Log out?"
             width={380}
           >
-            <p style={{ margin: "0 0 18px", color: colors.typography.secondaryText, fontSize: 14, lineHeight: 1.6 }}>
-              You'll be signed out of Manchly Creator Suite on this device.
+            <p
+              style={{
+                margin: "0 0 18px",
+                color: colors.user?.subHeading || "#73799B",
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to log out of your Manchly account?
             </p>
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={() => setConfirmLogout(false)}
                 style={{
                   flex: 1,
-                  border: `1.5px solid ${colors.base.border}`,
-                  background: "#fff",
-                  color: colors.typography.primaryText,
+                  border: `1.5px solid ${colors.user?.border || "rgba(255, 255, 255, 0.08)"}`,
+                  background: colors.user?.card || "#1A1E38",
+                  color: colors.user?.text || "#FFFFFF",
                   borderRadius: 12,
                   padding: "11px 16px",
                   fontSize: 14,
@@ -195,13 +208,13 @@ export default function Sidebar({
               <button
                 onClick={() => {
                   setConfirmLogout(false);
-                  onLogout?.();
+                  logout?.();
                 }}
                 style={{
                   flex: 1,
                   border: "none",
-                  background: colors.gradients.danger,
-                  color: "#fff",
+                  background: colors.gradients?.danger || "#EF4444",
+                  color: "#FFFFFF",
                   borderRadius: 12,
                   padding: "11px 16px",
                   fontSize: 14,
@@ -212,7 +225,7 @@ export default function Sidebar({
                   alignItems: "center",
                   justifyContent: "center",
                   gap: 8,
-                  boxShadow: "0 6px 16px rgba(220,38,38,0.3)",
+                  boxShadow: "0 6px 16px rgba(239, 68, 68, 0.3)",
                 }}
               >
                 <LogOut size={15} /> Log out
